@@ -1,0 +1,15 @@
+{
+	"name": "ADF-DE-AdventureWorks",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "indiasouthcentral",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "2831cf8a-8a5e-4a2e-b184-8a9222127389",
+		"tenantId": "396fde0c-6e03-4c64-8105-3d66bc468074"
+	}
+}
