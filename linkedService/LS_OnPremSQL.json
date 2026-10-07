@@ -5,13 +5,13 @@
 		"annotations": [],
 		"type": "SqlServer",
 		"typeProperties": {
-			"server": "de-adf.database.windows.net",
-			"database": "de-adf-database",
+			"server": "LAPTOP-C0JAN9H0\\SQLEXPRESS",
+			"database": "AdventureWorks2025",
 			"encrypt": "mandatory",
-			"trustServerCertificate": false,
+			"trustServerCertificate": true,
 			"authenticationType": "SQL",
-			"userName": "awadmin",
-			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiIyYjEzNmFjYy0yOTIxLTQ5ZGEtOTVmMi1jYTRmMTM3NDk1MjkiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+			"userName": "ADFUser",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiI3N2E4MzY1Yi0zY2EzLTRlM2QtOTVlNi0zZmM3Y2U0MjhmZDMiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
 		},
 		"connectVia": {
 			"referenceName": "integrationRuntime1",
