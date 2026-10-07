@@ -1,0 +1,23 @@
+{
+	"name": "DS_REST_Parameterized",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "RestService1",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"pRelativeUrl": {
+				"type": "string"
+			}
+		},
+		"annotations": [],
+		"type": "RestResource",
+		"typeProperties": {
+			"relativeUrl": {
+				"value": "@dataset().pRelativeUrl",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	}
+}

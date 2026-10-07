@@ -1,0 +1,61 @@
+{
+	"name": "PL_Test_REST_API",
+	"properties": {
+		"activities": [
+			{
+				"name": "CP_Test_REST_To_ADLS",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "RestSource",
+						"httpRequestTimeout": "00:01:40",
+						"requestInterval": "00.00:00:00.010",
+						"requestMethod": "GET",
+						"paginationRules": {
+							"supportRFC5988": "true"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings"
+						}
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_REST_Parameterized",
+						"type": "DatasetReference",
+						"parameters": {
+							"pRelativeUrl": "v2/rates?base=EUR&quotes=USD,INR"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "DS_ADLS_JSON_Parameterized",
+						"type": "DatasetReference",
+						"parameters": {
+							"pFolderPath": "landing/api/exchangerates/2026/10/07",
+							"pFileName": "exchange_rates.json"
+						}
+					}
+				]
+			}
+		],
+		"annotations": []
+	}
+}
