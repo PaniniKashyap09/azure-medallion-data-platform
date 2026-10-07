@@ -1,0 +1,48 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "ADF-DE-AdventureWorks"
+		},
+		"LS_OnPremSQL_password": {
+			"value": ""
+		},
+		"LS_AzureSQL_password": {
+			"value": ""
+		},
+		"integrationRuntime1_properties_typeProperties_linkedInfo_resourceId": {
+			"value": "/subscriptions/91f7d477-0d2c-4632-98d5-b07e458fd838/resourcegroups/rg-adf-adventureworks/providers/Microsoft.DataFactory/factories/ADF-AdventureWorks2/integrationruntimes/SHIR-AdventureWorks"
+		},
+		"LS_ADLS_properties_typeProperties_url": {
+			"value": "https://steadventureworks011.dfs.core.windows.net/"
+		},
+		"LS_OnPremSQL_properties_typeProperties_server": {
+			"value": "LAPTOP-C0JAN9H0\\SQLEXPRESS"
+		},
+		"LS_OnPremSQL_properties_typeProperties_database": {
+			"value": "AdventureWorks2025"
+		},
+		"LS_OnPremSQL_properties_typeProperties_userName": {
+			"value": "ADFUser"
+		},
+		"LS_AzureSQL_properties_typeProperties_server": {
+			"value": "de-adf.database.windows.net"
+		},
+		"LS_AzureSQL_properties_typeProperties_database": {
+			"value": "de-adf-database"
+		},
+		"LS_AzureSQL_properties_typeProperties_userName": {
+			"value": "awadmin"
+		},
+		"RestService1_properties_typeProperties_url": {
+			"value": "https://api.frankfurter.dev"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}
