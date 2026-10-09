@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "SELECT *\nFROM dbo.MetadataConfig\nWHERE IsActive = 1\nORDER BY ExecutionOrder, ProcessId;",
+						"sqlReaderQuery": "SELECT *\nFROM dbo.MetadataConfig\nWHERE IsActive = 1\n  AND (\n      '@{pipeline().parameters.pProcessId}' = ''\n      OR ProcessId = TRY_CONVERT(\n          INT,\n          '@{pipeline().parameters.pProcessId}'\n      )\n  )\nORDER BY ExecutionOrder, ProcessId;",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
