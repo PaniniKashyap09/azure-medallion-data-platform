@@ -151,7 +151,10 @@
 														"source_file": "abfss://landing@steadventureworks011.dfs.core.windows.net/onprem/adventureworks/salesorderheader/2026/10/07/SalesOrderHeader.parquet",
 														"bronze_path": "abfss://data@steadventureworks011.dfs.core.windows.net/bronze/onprem/adventureworks/salesorderheader/",
 														"source_system": "OnPremSQL",
-														"batch_id": "@pipeline().RunId"
+														"batch_id": {
+															"value": "@pipeline().RunId",
+															"type": "Expression"
+														}
 													}
 												},
 												"linkedServiceName": {
@@ -292,7 +295,7 @@
 		"parameters": {
 			"pProcessId": {
 				"type": "string",
-				"defaultValue": "6"
+				"defaultValue": "4"
 			}
 		},
 		"annotations": []
