@@ -25,7 +25,8 @@
 				"folderPath": {
 					"value": "@dataset().pFolderPath",
 					"type": "Expression"
-				}
+				},
+				"fileSystem": "landing"
 			},
 			"compressionCodec": "snappy"
 		},
