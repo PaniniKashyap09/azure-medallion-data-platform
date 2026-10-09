@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'LS_AzureSQL'"
 		},
+		"LS_Databricks_accessToken": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accessToken' of 'LS_Databricks'"
+		},
 		"LS_OnPremSQL_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'LS_OnPremSQL'"
@@ -30,6 +34,10 @@
 		"LS_AzureSQL_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "awadmin"
+		},
+		"LS_Databricks_properties_typeProperties_existingClusterId": {
+			"type": "string",
+			"defaultValue": "1007-074334-3nrid1uj"
 		},
 		"LS_OnPremSQL_properties_typeProperties_server": {
 			"type": "string",
@@ -78,6 +86,9 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
+					"LS_Databricks_accessToken": {
+						"value": "[parameters('LS_Databricks_accessToken')]"
+					},
 					"LS_AzureSQL_password": {
 						"value": "[parameters('LS_AzureSQL_password')]"
 					},
@@ -86,6 +97,9 @@
 					},
 					"LS_ADLS_properties_typeProperties_url": {
 						"value": "[parameters('LS_ADLS_properties_typeProperties_url')]"
+					},
+					"LS_Databricks_properties_typeProperties_existingClusterId": {
+						"value": "[parameters('LS_Databricks_properties_typeProperties_existingClusterId')]"
 					},
 					"RestService1_properties_typeProperties_url": {
 						"value": "[parameters('RestService1_properties_typeProperties_url')]"
