@@ -17,7 +17,7 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "SELECT DB_NAME() AS CurrentDatabase;",
+						"sqlReaderQuery": "SELECT *\nFROM dbo.MetadataConfig\nWHERE IsActive = 1\nORDER BY ExecutionOrder, ProcessId;",
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -25,17 +25,237 @@
 						"referenceName": "DS_AzureSQL_Parameterized",
 						"type": "DatasetReference",
 						"parameters": {
-							"pSchema": "dbo ",
-							"pTable": "MetadataConfiguration"
+							"pSchema": "dbo",
+							"pTable": "MetadataConfig"
 						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "FE_Process_Metadata",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "LK_Get_Metadata",
+						"dependencyConditions": [
+							"Completed"
+						]
 					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('LK_Get_Metadata').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "SW_SourceType",
+							"type": "Switch",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"on": {
+									"value": "@item().SourceType",
+									"type": "Expression"
+								},
+								"cases": [
+									{
+										"value": "OnPremSQL",
+										"activities": [
+											{
+												"name": "CP_OnPremSQL_To_ADLS",
+												"type": "Copy",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "SqlServerSource",
+														"queryTimeout": "02:00:00",
+														"partitionOption": "None"
+													},
+													"sink": {
+														"type": "ParquetSink",
+														"storeSettings": {
+															"type": "AzureBlobFSWriteSettings"
+														},
+														"formatSettings": {
+															"type": "ParquetWriteSettings"
+														}
+													},
+													"enableStaging": false,
+													"translator": {
+														"type": "TabularTranslator",
+														"typeConversion": true,
+														"typeConversionSettings": {
+															"allowDataTruncation": true,
+															"treatBooleanAsNumber": false
+														}
+													}
+												},
+												"inputs": [
+													{
+														"referenceName": "DS_SQL_Parameterized",
+														"type": "DatasetReference",
+														"parameters": {
+															"pSchema": "@item().SourceSchema",
+															"pTable": "@item().SourceObject"
+														}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "DS_ADLS_Parquet_Parameterized",
+														"type": "DatasetReference",
+														"parameters": {
+															"pFolderPath": "@item().TargetFolder",
+															"pFileName": "@concat(item().SourceObject,'.parquet')"
+														}
+													}
+												]
+											}
+										]
+									},
+									{
+										"value": "AzureSQL",
+										"activities": [
+											{
+												"name": "CP_AzureSQL_To_ADLS",
+												"type": "Copy",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "AzureSqlSource",
+														"queryTimeout": "02:00:00",
+														"partitionOption": "None"
+													},
+													"sink": {
+														"type": "ParquetSink",
+														"storeSettings": {
+															"type": "AzureBlobFSWriteSettings"
+														},
+														"formatSettings": {
+															"type": "ParquetWriteSettings"
+														}
+													},
+													"enableStaging": false,
+													"translator": {
+														"type": "TabularTranslator",
+														"typeConversion": true,
+														"typeConversionSettings": {
+															"allowDataTruncation": true,
+															"treatBooleanAsNumber": false
+														}
+													}
+												},
+												"inputs": [
+													{
+														"referenceName": "DS_AzureSQL_Parameterized",
+														"type": "DatasetReference",
+														"parameters": {
+															"pSchema": "@item().SourceSchema",
+															"pTable": "@item().SourceObject"
+														}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "DS_ADLS_Parquet_Parameterized",
+														"type": "DatasetReference",
+														"parameters": {
+															"pFolderPath": "@item().TargetFolder",
+															"pFileName": "@concat(item().SourceObject,'.parquet')"
+														}
+													}
+												]
+											}
+										]
+									},
+									{
+										"value": "API",
+										"activities": [
+											{
+												"name": "CP_API_To_ADLS",
+												"type": "Copy",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "RestSource",
+														"httpRequestTimeout": "00:01:40",
+														"requestInterval": "00.00:00:00.010",
+														"requestMethod": "GET",
+														"paginationRules": {
+															"supportRFC5988": "true"
+														}
+													},
+													"sink": {
+														"type": "JsonSink",
+														"storeSettings": {
+															"type": "AzureBlobFSWriteSettings"
+														},
+														"formatSettings": {
+															"type": "JsonWriteSettings"
+														}
+													},
+													"enableStaging": false
+												},
+												"inputs": [
+													{
+														"referenceName": "DS_REST_Parameterized",
+														"type": "DatasetReference",
+														"parameters": {
+															"pRelativeUrl": "/v1/latest"
+														}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "DS_ADLS_JSON_Parameterized",
+														"type": "DatasetReference",
+														"parameters": {
+															"pFolderPath": "@item().TargetFolder",
+															"pFileName": "@concat(item().SourceObject,'.json')"
+														}
+													}
+												]
+											}
+										]
+									}
+								]
+							}
+						}
+					]
 				}
 			}
 		],
 		"parameters": {
 			"pProcessId": {
-				"type": "string",
-				"defaultValue": "3"
+				"type": "string"
 			}
 		},
 		"annotations": []
