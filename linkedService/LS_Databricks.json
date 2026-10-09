@@ -1,0 +1,14 @@
+{
+	"name": "LS_Databricks",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"description": "Connection from ADF to existing AdventureWorks Databricks workspace",
+		"annotations": [],
+		"type": "AzureDatabricks",
+		"typeProperties": {
+			"domain": "https://adb-7405608395505915.15.azuredatabricks.net",
+			"existingClusterId": "1007-074334-3nrid1uj",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDhFN0Q4RkY4LTYzNzMtNDM3Ni05RERCLTkzNEY1MTNBMUYxRF9hMDMyMGY5YS1lNTU5LTRhNWYtODBkNy1lOWIyMWQ0MDMzNzciDQp9"
+		}
+	}
+}
