@@ -7,33 +7,17 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "ADF-DE-AdventureWorks"
 		},
-		"LS_OnPremSQL_password": {
-			"type": "secureString",
-			"metadata": "Secure string for 'password' of 'LS_OnPremSQL'"
-		},
 		"LS_AzureSQL_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'LS_AzureSQL'"
 		},
-		"integrationRuntime1_properties_typeProperties_linkedInfo_resourceId": {
-			"type": "string",
-			"defaultValue": "/subscriptions/91f7d477-0d2c-4632-98d5-b07e458fd838/resourcegroups/rg-adf-adventureworks/providers/Microsoft.DataFactory/factories/ADF-AdventureWorks2/integrationruntimes/SHIR-AdventureWorks"
+		"LS_OnPremSQL_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LS_OnPremSQL'"
 		},
 		"LS_ADLS_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://steadventureworks011.dfs.core.windows.net/"
-		},
-		"LS_OnPremSQL_properties_typeProperties_server": {
-			"type": "string",
-			"defaultValue": "LAPTOP-C0JAN9H0\\SQLEXPRESS"
-		},
-		"LS_OnPremSQL_properties_typeProperties_database": {
-			"type": "string",
-			"defaultValue": "AdventureWorks2025"
-		},
-		"LS_OnPremSQL_properties_typeProperties_userName": {
-			"type": "string",
-			"defaultValue": "ADFUser"
 		},
 		"LS_AzureSQL_properties_typeProperties_server": {
 			"type": "string",
@@ -47,9 +31,25 @@
 			"type": "string",
 			"defaultValue": "awadmin"
 		},
+		"LS_OnPremSQL_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "LAPTOP-C0JAN9H0\\SQLEXPRESS"
+		},
+		"LS_OnPremSQL_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "AdventureWorks2025"
+		},
+		"LS_OnPremSQL_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "ADFUser"
+		},
 		"RestService1_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://api.frankfurter.dev"
+		},
+		"integrationRuntime1_properties_typeProperties_linkedInfo_resourceId": {
+			"type": "string",
+			"defaultValue": "/subscriptions/91f7d477-0d2c-4632-98d5-b07e458fd838/resourcegroups/rg-adf-adventureworks/providers/Microsoft.DataFactory/factories/ADF-AdventureWorks2/integrationruntimes/SHIR-AdventureWorks"
 		},
 		"containerUri": {
 			"type": "string",
@@ -78,14 +78,11 @@
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
 					},
-					"LS_OnPremSQL_password": {
-						"value": "[parameters('LS_OnPremSQL_password')]"
-					},
 					"LS_AzureSQL_password": {
 						"value": "[parameters('LS_AzureSQL_password')]"
 					},
-					"integrationRuntime1_properties_typeProperties_linkedInfo_resourceId": {
-						"value": "[parameters('integrationRuntime1_properties_typeProperties_linkedInfo_resourceId')]"
+					"LS_OnPremSQL_password": {
+						"value": "[parameters('LS_OnPremSQL_password')]"
 					},
 					"LS_ADLS_properties_typeProperties_url": {
 						"value": "[parameters('LS_ADLS_properties_typeProperties_url')]"
@@ -93,14 +90,8 @@
 					"RestService1_properties_typeProperties_url": {
 						"value": "[parameters('RestService1_properties_typeProperties_url')]"
 					},
-					"LS_OnPremSQL_properties_typeProperties_server": {
-						"value": "[parameters('LS_OnPremSQL_properties_typeProperties_server')]"
-					},
-					"LS_OnPremSQL_properties_typeProperties_database": {
-						"value": "[parameters('LS_OnPremSQL_properties_typeProperties_database')]"
-					},
-					"LS_OnPremSQL_properties_typeProperties_userName": {
-						"value": "[parameters('LS_OnPremSQL_properties_typeProperties_userName')]"
+					"integrationRuntime1_properties_typeProperties_linkedInfo_resourceId": {
+						"value": "[parameters('integrationRuntime1_properties_typeProperties_linkedInfo_resourceId')]"
 					},
 					"LS_AzureSQL_properties_typeProperties_server": {
 						"value": "[parameters('LS_AzureSQL_properties_typeProperties_server')]"
@@ -110,6 +101,15 @@
 					},
 					"LS_AzureSQL_properties_typeProperties_userName": {
 						"value": "[parameters('LS_AzureSQL_properties_typeProperties_userName')]"
+					},
+					"LS_OnPremSQL_properties_typeProperties_server": {
+						"value": "[parameters('LS_OnPremSQL_properties_typeProperties_server')]"
+					},
+					"LS_OnPremSQL_properties_typeProperties_database": {
+						"value": "[parameters('LS_OnPremSQL_properties_typeProperties_database')]"
+					},
+					"LS_OnPremSQL_properties_typeProperties_userName": {
+						"value": "[parameters('LS_OnPremSQL_properties_typeProperties_userName')]"
 					}
 				}
 			},

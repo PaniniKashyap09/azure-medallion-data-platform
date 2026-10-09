@@ -7,17 +7,13 @@
 			"metadata": "Data Factory name",
 			"defaultValue": "ADF-DE-AdventureWorks"
 		},
-		"LS_OnPremSQL_password": {
-			"type": "secureString",
-			"metadata": "Secure string for 'password' of 'LS_OnPremSQL'"
-		},
 		"LS_AzureSQL_password": {
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'LS_AzureSQL'"
 		},
-		"integrationRuntime1_properties_typeProperties_linkedInfo_resourceId": {
-			"type": "string",
-			"defaultValue": "/subscriptions/91f7d477-0d2c-4632-98d5-b07e458fd838/resourcegroups/rg-adf-adventureworks/providers/Microsoft.DataFactory/factories/ADF-AdventureWorks2/integrationruntimes/SHIR-AdventureWorks"
+		"LS_OnPremSQL_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LS_OnPremSQL'"
 		},
 		"LS_ADLS_properties_typeProperties_url": {
 			"type": "string",
@@ -27,17 +23,9 @@
 			"type": "string",
 			"defaultValue": "https://api.frankfurter.dev"
 		},
-		"LS_OnPremSQL_properties_typeProperties_server": {
+		"integrationRuntime1_properties_typeProperties_linkedInfo_resourceId": {
 			"type": "string",
-			"defaultValue": "LAPTOP-C0JAN9H0\\SQLEXPRESS"
-		},
-		"LS_OnPremSQL_properties_typeProperties_database": {
-			"type": "string",
-			"defaultValue": "AdventureWorks2025"
-		},
-		"LS_OnPremSQL_properties_typeProperties_userName": {
-			"type": "string",
-			"defaultValue": "ADFUser"
+			"defaultValue": "/subscriptions/91f7d477-0d2c-4632-98d5-b07e458fd838/resourcegroups/rg-adf-adventureworks/providers/Microsoft.DataFactory/factories/ADF-AdventureWorks2/integrationruntimes/SHIR-AdventureWorks"
 		},
 		"LS_AzureSQL_properties_typeProperties_server": {
 			"type": "string",
@@ -50,27 +38,24 @@
 		"LS_AzureSQL_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "awadmin"
+		},
+		"LS_OnPremSQL_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "LAPTOP-C0JAN9H0\\SQLEXPRESS"
+		},
+		"LS_OnPremSQL_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "AdventureWorks2025"
+		},
+		"LS_OnPremSQL_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "ADFUser"
 		}
 	},
 	"variables": {
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
-		{
-			"name": "[concat(parameters('factoryName'), '/integrationRuntime1')]",
-			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "SelfHosted",
-				"typeProperties": {
-					"linkedInfo": {
-						"resourceId": "[parameters('integrationRuntime1_properties_typeProperties_linkedInfo_resourceId')]",
-						"authorizationType": "Rbac"
-					}
-				}
-			},
-			"dependsOn": []
-		},
 		{
 			"name": "[concat(parameters('factoryName'), '/LS_ADLS')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
@@ -100,127 +85,19 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/LS_OnPremSQL')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"name": "[concat(parameters('factoryName'), '/integrationRuntime1')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"annotations": [],
-				"type": "SqlServer",
+				"type": "SelfHosted",
 				"typeProperties": {
-					"server": "[parameters('LS_OnPremSQL_properties_typeProperties_server')]",
-					"database": "[parameters('LS_OnPremSQL_properties_typeProperties_database')]",
-					"encrypt": "mandatory",
-					"trustServerCertificate": true,
-					"authenticationType": "SQL",
-					"userName": "[parameters('LS_OnPremSQL_properties_typeProperties_userName')]",
-					"password": {
-						"type": "SecureString",
-						"value": "[parameters('LS_OnPremSQL_password')]"
+					"linkedInfo": {
+						"resourceId": "[parameters('integrationRuntime1_properties_typeProperties_linkedInfo_resourceId')]",
+						"authorizationType": "Rbac"
 					}
-				},
-				"connectVia": {
-					"referenceName": "integrationRuntime1",
-					"type": "IntegrationRuntimeReference"
 				}
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/integrationRuntime1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/LS_AzureSQL')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureSqlDatabase",
-				"typeProperties": {
-					"server": "[parameters('LS_AzureSQL_properties_typeProperties_server')]",
-					"database": "[parameters('LS_AzureSQL_properties_typeProperties_database')]",
-					"encrypt": "mandatory",
-					"trustServerCertificate": false,
-					"authenticationType": "SQL",
-					"userName": "[parameters('LS_AzureSQL_properties_typeProperties_userName')]",
-					"password": {
-						"type": "SecureString",
-						"value": "[parameters('LS_AzureSQL_password')]"
-					}
-				},
-				"connectVia": {
-					"referenceName": "integrationRuntime1",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/integrationRuntime1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/DS_ADLS_Parquet_Parameterized')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "LS_ADLS",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"pFolderPath": {
-						"type": "string"
-					},
-					"pFileName": {
-						"type": "string"
-					}
-				},
-				"annotations": [],
-				"type": "Parquet",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@dataset().pFileName",
-							"type": "Expression"
-						},
-						"folderPath": {
-							"value": "@dataset().pFolderPath",
-							"type": "Expression"
-						}
-					},
-					"compressionCodec": "snappy"
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/DS_REST_Parameterized')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "RestService1",
-					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"pRelativeUrl": {
-						"type": "string"
-					}
-				},
-				"annotations": [],
-				"type": "RestResource",
-				"typeProperties": {
-					"relativeUrl": {
-						"value": "@dataset().pRelativeUrl",
-						"type": "Expression"
-					}
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/RestService1')]"
-			]
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/DS_ADLS_JSON_Parameterized')]",
@@ -261,73 +138,127 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/DS_SQL_Parameterized')]",
+			"name": "[concat(parameters('factoryName'), '/DS_ADLS_Parquet_Parameterized')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "LS_OnPremSQL",
+					"referenceName": "LS_ADLS",
 					"type": "LinkedServiceReference"
 				},
 				"parameters": {
-					"pSchema": {
+					"pFolderPath": {
 						"type": "string"
 					},
-					"pTable": {
+					"pFileName": {
 						"type": "string"
 					}
 				},
 				"annotations": [],
-				"type": "SqlServerTable",
-				"schema": [],
+				"type": "Parquet",
 				"typeProperties": {
-					"schema": {
-						"value": "@dataset().pSchema",
-						"type": "Expression"
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().pFileName",
+							"type": "Expression"
+						},
+						"folderPath": {
+							"value": "@dataset().pFolderPath",
+							"type": "Expression"
+						},
+						"fileSystem": "landing"
 					},
-					"table": {
-						"value": "@dataset().pTable",
-						"type": "Expression"
-					}
-				}
+					"compressionCodec": "snappy"
+				},
+				"schema": []
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/LS_OnPremSQL')]"
+				"[concat(variables('factoryId'), '/linkedServices/LS_ADLS')]"
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/DS_AzureSQL_Parameterized')]",
+			"name": "[concat(parameters('factoryName'), '/DS_REST_Parameterized')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "LS_AzureSQL",
+					"referenceName": "RestService1",
 					"type": "LinkedServiceReference"
 				},
 				"parameters": {
-					"pSchema": {
-						"type": "string"
-					},
-					"pTable": {
+					"pRelativeUrl": {
 						"type": "string"
 					}
 				},
 				"annotations": [],
-				"type": "AzureSqlTable",
-				"schema": [],
+				"type": "RestResource",
 				"typeProperties": {
-					"schema": {
-						"value": "@dataset().pSchema",
-						"type": "Expression"
-					},
-					"table": {
-						"value": "@dataset().pTable",
+					"relativeUrl": {
+						"value": "@dataset().pRelativeUrl",
 						"type": "Expression"
 					}
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/RestService1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_AzureSQL')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('LS_AzureSQL_properties_typeProperties_server')]",
+					"database": "[parameters('LS_AzureSQL_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('LS_AzureSQL_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('LS_AzureSQL_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "integrationRuntime1",
+					"type": "IntegrationRuntimeReference"
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/LS_AzureSQL')]"
+				"[concat(variables('factoryId'), '/integrationRuntimes/integrationRuntime1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_OnPremSQL')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"server": "[parameters('LS_OnPremSQL_properties_typeProperties_server')]",
+					"database": "[parameters('LS_OnPremSQL_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": true,
+					"authenticationType": "SQL",
+					"userName": "[parameters('LS_OnPremSQL_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('LS_OnPremSQL_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "integrationRuntime1",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/integrationRuntime1')]"
 			]
 		},
 		{
@@ -398,6 +329,127 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/DS_REST_Parameterized')]",
 				"[concat(variables('factoryId'), '/datasets/DS_ADLS_JSON_Parameterized')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_AzureSQL_Parameterized')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_AzureSQL",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"pSchema": {
+						"type": "string"
+					},
+					"pTable": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": {
+						"value": "@dataset().pSchema",
+						"type": "Expression"
+					},
+					"table": {
+						"value": "@dataset().pTable",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_AzureSQL')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_SQL_Parameterized')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_OnPremSQL",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"pSchema": {
+						"type": "string"
+					},
+					"pTable": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": {
+						"value": "@dataset().pSchema",
+						"type": "Expression"
+					},
+					"table": {
+						"value": "@dataset().pTable",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_OnPremSQL')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_Generic_Source_To_ADLS')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "LK_Get_Metadata",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT DB_NAME() AS CurrentDatabase;",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "DS_AzureSQL_Parameterized",
+								"type": "DatasetReference",
+								"parameters": {
+									"pSchema": "dbo ",
+									"pTable": "MetadataConfiguration"
+								}
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"pProcessId": {
+						"type": "string",
+						"defaultValue": "3"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_AzureSQL_Parameterized')]"
 			]
 		},
 		{
