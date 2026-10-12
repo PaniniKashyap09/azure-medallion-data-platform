@@ -73,7 +73,14 @@
 					{
 						"name": "LK_Get_Metadata",
 						"type": "Lookup",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "SP_Log_Process_Start",
+								"dependencyConditions": [
+									"Completed"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "0.12:00:00",
 							"retry": 0,
@@ -86,7 +93,7 @@
 							"source": {
 								"type": "AzureSqlSource",
 								"sqlReaderQuery": {
-									"value": "@concat(\n'SELECT *\nFROM dbo.MetadataConfig\nWHERE IsActive = 1',\nif(\n    empty(pipeline().parameters.pProcessId),\n    '',\n    concat(' AND ProcessId = ', pipeline().parameters.pProcessId)\n),\n' ORDER BY ExecutionOrder, ProcessId;'\n)",
+									"value": "SELECT *\nFROM dbo.MetadataConfig\nWHERE IsActive = 1\n  AND ProcessId = 4\nORDER BY ExecutionOrder, ProcessId;",
 									"type": "Expression"
 								},
 								"queryTimeout": "02:00:00",
@@ -199,7 +206,7 @@
 														"type": "DatabricksNotebook",
 														"dependsOn": [
 															{
-																"activity": "CP_OnPremSQL_To_ADLS",
+																"activity": "SP_Log_Copy_Counts",
 																"dependencyConditions": [
 																	"Succeeded"
 																]
@@ -227,6 +234,64 @@
 														},
 														"linkedServiceName": {
 															"referenceName": "LS_Databricks",
+															"type": "LinkedServiceReference"
+														}
+													},
+													{
+														"name": "SP_Log_Copy_Counts",
+														"type": "SqlServerStoredProcedure",
+														"dependsOn": [
+															{
+																"activity": "CP_OnPremSQL_To_ADLS",
+																"dependencyConditions": [
+																	"Succeeded"
+																]
+															}
+														],
+														"policy": {
+															"timeout": "0.12:00:00",
+															"retry": 0,
+															"retryIntervalInSeconds": 30,
+															"secureOutput": false,
+															"secureInput": false
+														},
+														"userProperties": [],
+														"typeProperties": {
+															"storedProcedureName": "[[dbo].[usp_ProcessLog_Update]",
+															"storedProcedureParameters": {
+																"PipelineRunId": {
+																	"value": {
+																		"value": "@pipeline().RunId",
+																		"type": "Expression"
+																	},
+																	"type": "String"
+																},
+																"Status": {
+																	"value": null,
+																	"type": "String"
+																},
+																"RowsRead": {
+																	"value": {
+																		"value": "@activity('CP_OnPremSQL_To_ADLS').output.rowsRead",
+																		"type": "Expression"
+																	},
+																	"type": "Int64"
+																},
+																"RowsWritten": {
+																	"value": {
+																		"value": "@activity('CP_OnPremSQL_To_ADLS').output.rowsCopied",
+																		"type": "Expression"
+																	},
+																	"type": "Int64"
+																},
+																"ErrorMessage": {
+																	"value": null,
+																	"type": "String"
+																}
+															}
+														},
+														"linkedServiceName": {
+															"referenceName": "LS_AzureSQL",
 															"type": "LinkedServiceReference"
 														}
 													}
@@ -358,6 +423,153 @@
 								}
 							]
 						}
+					},
+					{
+						"name": "SP_Log_Process_Start",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[usp_ProcessLog_Start]",
+							"storedProcedureParameters": {
+								"ProcessId": {
+									"value": {
+										"value": "@pipeline().parameters.pProcessId",
+										"type": "Expression"
+									},
+									"type": "Int32"
+								},
+								"BatchId": {
+									"value": {
+										"value": "@pipeline().RunId",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"PipelineRunId": {
+									"value": {
+										"value": "@pipeline().RunId",
+										"type": "Expression"
+									},
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_AzureSQL",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "SP_Log_Process_Success",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "FE_Process_Metadata",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[usp_ProcessLog_Update]",
+							"storedProcedureParameters": {
+								"PipelineRunId": {
+									"value": {
+										"value": "@pipeline().RunId",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Status": {
+									"value": "Succeeded",
+									"type": "String"
+								},
+								"RowsRead": {
+									"value": null,
+									"type": "Int64"
+								},
+								"RowsWritten": {
+									"value": null,
+									"type": "Int64"
+								},
+								"ErrorMessage": {
+									"value": "",
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_AzureSQL",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "SP_Log_Process_Failure",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "FE_Process_Metadata",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[usp_ProcessLog_Update]",
+							"storedProcedureParameters": {
+								"PipelineRunId": {
+									"value": {
+										"value": "@pipeline().RunId",
+										"type": "Expression"
+									},
+									"type": "String"
+								},
+								"Status": {
+									"value": "Failed",
+									"type": "String"
+								},
+								"RowsRead": {
+									"value": null,
+									"type": "Int64"
+								},
+								"RowsWritten": {
+									"value": null,
+									"type": "Int64"
+								},
+								"ErrorMessage": {
+									"value": "",
+									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_AzureSQL",
+							"type": "LinkedServiceReference"
+						}
 					}
 				],
 				"policy": {
@@ -369,10 +581,16 @@
 						"defaultValue": "4"
 					}
 				},
+				"variables": {
+					"vProcessLogId": {
+						"type": "String"
+					}
+				},
 				"annotations": []
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/DS_AzureSQL_Parameterized')]",
+				"[concat(variables('factoryId'), '/linkedServices/LS_AzureSQL')]",
 				"[concat(variables('factoryId'), '/datasets/DS_SQL_Parameterized')]",
 				"[concat(variables('factoryId'), '/datasets/DS_ADLS_Parquet_Parameterized')]",
 				"[concat(variables('factoryId'), '/linkedServices/LS_Databricks')]",
