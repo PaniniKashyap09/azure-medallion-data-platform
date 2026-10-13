@@ -106,7 +106,7 @@
 							"value": "@pipeline().parameters.pProcessId"
 						},
 						"BatchId": {
-							"value": ""
+							"value": "@pipeline().parameters.pBatchId"
 						},
 						"PipelineRunId": {
 							"value": "@pipeline().RunId"
