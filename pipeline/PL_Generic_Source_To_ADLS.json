@@ -25,7 +25,7 @@
 					"source": {
 						"type": "AzureSqlSource",
 						"sqlReaderQuery": {
-							"value": "SELECT *\nFROM dbo.MetadataConfig\nWHERE IsActive = 1\n  AND ProcessId = 4\nORDER BY ExecutionOrder, ProcessId;",
+							"value": "\nSELECT\n    m.*,\n    w.LastCommittedWatermark AS LastWatermarkValue\nFROM dbo.MetadataConfig AS m\nLEFT JOIN dbo.WatermarkState AS w\n    ON m.ProcessId = w.ProcessId\nWHERE m.IsActive = 1\nORDER BY m.ExecutionOrder;",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
@@ -91,7 +91,7 @@
 													"source": {
 														"type": "SqlServerSource",
 														"sqlReaderQuery": {
-															"value": "/* FULL load: saari rows read karo.\n   INCREMENTAL load: sirf watermark se newer rows read karo. */\n@concat(\n    'SELECT * FROM ',\n    '[', item().SourceSchema, '].[',\n    item().SourceObject, ']',\n    if(\n        equals(toUpper(item().LoadType), 'INCREMENTAL'),\n        concat(\n            ' WHERE [', item().WatermarkColumn, '] > ''',\n            string(item().LastWatermarkValue),\n            ''''\n        ),\n        ''\n    )\n)",
+															"value": "@concat(\n'SELECT * FROM [', item().SourceSchema, '].[',\nitem().SourceObject, ']',\nif(\nand(\nequals(toUpper(item().LoadType), 'INCREMENTAL'),\nnot(equals(string(item().LastWatermarkValue), ''))\n),\nconcat(\n' WHERE [', item().WatermarkColumn, '] > ''',\nstring(item().LastWatermarkValue),\n''''\n),\n''\n)\n)",
 															"type": "Expression"
 														},
 														"queryTimeout": "02:00:00",
