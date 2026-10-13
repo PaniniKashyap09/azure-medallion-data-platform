@@ -179,7 +179,7 @@
 										"type": "Expression"
 									},
 									"bronze_path": {
-										"value": "@concat('abfss://data@steadventureworks011.dfs.core.windows.net/bronze/', if(equals(toUpper(item().SourceType),'ONPREMSQL'),'onprem',if(equals(toUpper(item().SourceType),'AZURESQL'),'azuresql','api')), '/', if(equals(toUpper(item().SourceType),'API'),'latest',item().SourceSchema), '/', item().SourceObject, '/')",
+										"value": "@concat(\n    'abfss://data@steadventureworks011.dfs.core.windows.net/bronze/',\n    if(\n        equals(toUpper(item().SourceType), 'ONPREMSQL'),\n        'onprem',\n        if(\n            equals(toUpper(item().SourceType), 'AZURESQL'),\n            'azuresql',\n            'api'\n        )\n    ),\n    '/',\n    if(\n        equals(toUpper(item().SourceType), 'API'),\n        'exchangerates',\n        if(\n            equals(toUpper(item().SourceType), 'ONPREMSQL'),\n            'adventureworks',\n            item().SourceSchema\n        )\n    ),\n    '/',\n    item().SourceObject,\n    '/'\n)",
 										"type": "Expression"
 									},
 									"source_system": "@item().SourceType",
