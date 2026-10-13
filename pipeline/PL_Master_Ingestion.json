@@ -175,7 +175,7 @@
 								"notebookPath": "/Users/paninikashyap917@gmail.com/NB_Bronze_Ingestion",
 								"baseParameters": {
 									"source_file": {
-										"value": "@concat('abfss://landing@steadventureworks011.dfs.core.windows.net/raw/', if(equals(toUpper(item().SourceType),'ONPREMSQL'),'OnPremSQL',if(equals(toUpper(item().SourceType),'AZURESQL'),'AzureSQL','API')), '/', if(equals(toUpper(item().SourceType),'API'),'latest',item().SourceSchema), '/', item().SourceObject, '/', item().SourceObject, if(equals(toUpper(item().SourceType),'API'),'.json','.parquet'))",
+										"value": "@concat(\n    'abfss://landing@steadventureworks011.dfs.core.windows.net/raw/',\n    if(\n        equals(toUpper(item().SourceType),'ONPREMSQL'),\n        'OnPremSQL',\n        if(\n            equals(toUpper(item().SourceType),'AZURESQL'),\n            'AzureSQL',\n            'API'\n        )\n    ),\n    '/',\n    if(\n        equals(toUpper(item().SourceType),'ONPREMSQL'),\n        concat(item().SourceSchema, '/', item().SourceObject),\n        if(\n            equals(toUpper(item().SourceType),'AZURESQL'),\n            concat(item().SourceSchema, '/', item().SourceObject),\n            concat('Frankfurter/', 'latest')\n        )\n    ),\n    if(equals(toUpper(item().SourceType),'API'), '.json', '.parquet')\n)",
 										"type": "Expression"
 									},
 									"bronze_path": {
