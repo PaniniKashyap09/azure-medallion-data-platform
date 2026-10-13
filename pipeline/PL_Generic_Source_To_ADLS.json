@@ -7,9 +7,9 @@
 				"type": "Lookup",
 				"dependsOn": [
 					{
-						"activity": "SP_Log_Process_Start",
+						"activity": "LK_Get_ProcessLogId",
 						"dependencyConditions": [
-							"Completed"
+							"Succeeded"
 						]
 					}
 				],
@@ -551,13 +551,6 @@
 				"typeProperties": {
 					"storedProcedureName": "[dbo].[usp_ProcessLog_Update]",
 					"storedProcedureParameters": {
-						"PipelineRunId": {
-							"value": {
-								"value": "@pipeline().RunId",
-								"type": "Expression"
-							},
-							"type": "String"
-						},
 						"Status": {
 							"value": "Succeeded",
 							"type": "String"
@@ -573,6 +566,10 @@
 						"ErrorMessage": {
 							"value": "",
 							"type": "String"
+						},
+						"ProcessLogId": {
+							"value": "",
+							"type": "Int32"
 						}
 					}
 				},
@@ -631,6 +628,38 @@
 				"linkedServiceName": {
 					"referenceName": "LS_AzureSQL",
 					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "LK_Get_ProcessLogId",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "SP_Log_Process_Start",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "SELECT TOP (1)\n    ProcessLogId\nFROM dbo.ProcessLog\nWHERE PipelineRunId = '@{pipeline().RunId}'\nORDER BY ProcessLogId DESC;",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DS_AzureSQL_Parameterized",
+						"type": "DatasetReference"
+					}
 				}
 			}
 		],
