@@ -28,7 +28,8 @@
 							"pSchema": "dbo",
 							"pTable": "MetadataConfig"
 						}
-					}
+					},
+					"firstRowOnly": false
 				}
 			},
 			{
