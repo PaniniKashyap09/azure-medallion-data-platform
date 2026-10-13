@@ -302,7 +302,10 @@
 				"typeProperties": {
 					"source": {
 						"type": "SqlServerSource",
-						"sqlReaderQuery": "@concat(\n    'SELECT MAX([',\n    pipeline().parameters.pWatermarkColumn,\n    ']) AS MaxWatermark FROM [',\n    pipeline().parameters.pSourceSchema,\n    '].[',\n    pipeline().parameters.pSourceObject,\n    ']'\n)\n",
+						"sqlReaderQuery": {
+							"value": "@if(\n    equals(toUpper(pipeline().parameters.pLoadType), 'INCREMENTAL'),\n    concat(\n        'SELECT MAX([',\n        pipeline().parameters.pWatermarkColumn,\n        ']) AS MaxWatermark FROM [',\n        pipeline().parameters.pSourceSchema,\n        '].[',\n        pipeline().parameters.pSourceObject,\n        ']'\n    ),\n    'SELECT CAST(NULL AS datetime2) AS MaxWatermark'\n)",
+							"type": "Expression"
+						},
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
