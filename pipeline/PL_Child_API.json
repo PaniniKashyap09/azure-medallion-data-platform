@@ -85,9 +85,6 @@
 						},
 						"BatchId": {
 							"value": "@pipeline().parameters.pBatchId"
-						},
-						"pBatchId": {
-							"value": "@pipeline().parameters.pBatchId"
 						}
 					}
 				},
