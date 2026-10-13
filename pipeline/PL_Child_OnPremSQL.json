@@ -154,7 +154,8 @@
 							"pSchema": "dbo",
 							"pTable": "ProcessLog"
 						}
-					}
+					},
+					"firstRowOnly": false
 				}
 			},
 			{
