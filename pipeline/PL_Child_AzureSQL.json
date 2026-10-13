@@ -1,0 +1,70 @@
+{
+	"name": "PL_Child_AzureSQL",
+	"properties": {
+		"activities": [
+			{
+				"name": "CP_AzureSQL_To_ADLS",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "@concat(\n    'SELECT * FROM [',\n    pipeline().parameters.pSourceSchema,\n    '].[',\n    pipeline().parameters.pSourceObject,\n    ']'\n)",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"enableStaging": false
+				},
+				"inputs": [
+					{
+						"referenceName": "DS_AzureSQL_Parameterized",
+						"type": "DatasetReference",
+						"parameters": {
+							"pSchema": "@pipeline().parameters.pSourceSchema",
+							"pTable": "@pipeline().parameters.pSourceObject"
+						}
+					}
+				]
+			}
+		],
+		"parameters": {
+			"pProcessId": {
+				"type": "int",
+				"defaultValue": 6
+			},
+			"pSourceSchema": {
+				"type": "string",
+				"defaultValue": "dbo"
+			},
+			"pSourceObject": {
+				"type": "string",
+				"defaultValue": "Customer"
+			},
+			"pLoadType": {
+				"type": "string",
+				"defaultValue": "FULL"
+			},
+			"pWatermarkColumn": {
+				"type": "string"
+			},
+			"pLastWatermarkValue": {
+				"type": "string"
+			},
+			"pBatchId": {
+				"type": "string"
+			}
+		},
+		"annotations": []
+	}
+}
