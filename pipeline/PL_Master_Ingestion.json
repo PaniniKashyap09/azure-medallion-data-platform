@@ -23,7 +23,11 @@
 					},
 					"dataset": {
 						"referenceName": "DS_AzureSQL_Parameterized",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"pSchema": "dbo",
+							"pTable": "MetadataConfig"
+						}
 					}
 				}
 			},
