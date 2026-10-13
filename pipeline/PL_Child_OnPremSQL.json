@@ -107,12 +107,6 @@
 						},
 						"PipelineRunId": {
 							"value": "@pipeline().RunId"
-						},
-						"pBatchId": {
-							"value": {
-								"value": "@pipeline().parameters.pBatchId",
-								"type": "Expression"
-							}
 						}
 					}
 				},
