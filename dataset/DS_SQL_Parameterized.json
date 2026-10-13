@@ -11,6 +11,9 @@
 			},
 			"pTable": {
 				"type": "string"
+			},
+			"pQuery": {
+				"type": "string"
 			}
 		},
 		"annotations": [],
