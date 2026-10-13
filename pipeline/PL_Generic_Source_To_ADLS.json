@@ -350,6 +350,7 @@
 													],
 													"storeSettings": {
 														"type": "AzureBlobFSReadSettings",
+														"recursive": true,
 														"enablePartitionDiscovery": false
 													},
 													"formatSettings": {
@@ -658,7 +659,10 @@
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
-						"sqlReaderQuery": "SELECT TOP (1)\n    ProcessLogId\nFROM dbo.ProcessLog\nWHERE PipelineRunId = '@{pipeline().RunId}'\nORDER BY ProcessLogId DESC;",
+						"sqlReaderQuery": {
+							"value": "SELECT TOP (1)\n    ProcessLogId\nFROM dbo.ProcessLog\nWHERE PipelineRunId = '@{pipeline().RunId}'\nORDER BY ProcessLogId DESC;",
+							"type": "Expression"
+						},
 						"queryTimeout": "02:00:00",
 						"partitionOption": "None"
 					},
@@ -695,19 +699,31 @@
 					"storedProcedureName": "[dbo].[usp_ExceptionLog_Insert]",
 					"storedProcedureParameters": {
 						"ProcessId": {
-							"value": "@pipeline().parameters.pProcessId"
+							"value": {
+								"value": "@pipeline().parameters.pProcessId",
+								"type": "Expression"
+							}
 						},
 						"BatchId": {
-							"value": "@pipeline().RunId"
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							}
 						},
 						"PipelineRunId": {
-							"value": "@pipeline().RunId"
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							}
 						},
 						"ExceptionType": {
 							"value": "PipelineFailure"
 						},
 						"SourceObject": {
-							"value": "@string(pipeline().parameters.pProcessId)"
+							"value": {
+								"value": "@string(pipeline().parameters.pProcessId)",
+								"type": "Expression"
+							}
 						},
 						"FileUri": {
 							"value": ""
@@ -720,6 +736,40 @@
 						},
 						"RuleName": {
 							"value": "ADF_PipelineFailure"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_AzureSQL",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "SP_Update_Watermark",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[usp_Watermark_Update]",
+					"storedProcedureParameters": {
+						"ProcessId": {
+							"value": {
+								"value": "@pipeline().parameters.pProcessId",
+								"type": "Expression"
+							}
+						},
+						"LastCommittedWatermark": {
+							"value": ""
+						},
+						"LastSuccessfulBatchId": {
+							"value": "@pipeline().RunId"
 						}
 					}
 				},
