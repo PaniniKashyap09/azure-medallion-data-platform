@@ -5,7 +5,14 @@
 			{
 				"name": "CP_AzureSQL_To_ADLS",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "LK_Get_ProcessLogId",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -69,6 +76,76 @@
 						}
 					}
 				]
+			},
+			{
+				"name": "SP_Log_Process_Start",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[usp_ProcessLog_Start]",
+					"storedProcedureParameters": {
+						"ProcessId": {
+							"value": "@pipeline().parameters.pProcessId"
+						},
+						"PipelineRunId": {
+							"value": "@pipeline().RunId"
+						},
+						"BatchId": {
+							"value": "@pipeline().parameters.pBatchId"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_AzureSQL",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "LK_Get_ProcessLogId",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "SP_Log_Process_Start",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "@concat(\n    'SELECT TOP (1) ProcessLogId ',\n    'FROM dbo.ProcessLog ',\n    'WHERE ProcessId = ',\n    string(pipeline().parameters.pProcessId),\n    ' AND BatchId = ''',\n    pipeline().parameters.pBatchId,\n    ''' AND PipelineRunId = ''',\n    pipeline().RunId,\n    ''' ORDER BY ProcessLogId DESC'\n)",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DS_AzureSQL_Parameterized",
+						"type": "DatasetReference",
+						"parameters": {
+							"pSchema": "dbo",
+							"pTable": "ProcessLog"
+						}
+					}
+				}
 			}
 		],
 		"parameters": {
