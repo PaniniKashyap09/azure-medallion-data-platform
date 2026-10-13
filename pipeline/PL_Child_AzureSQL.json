@@ -146,6 +146,182 @@
 						}
 					}
 				}
+			},
+			{
+				"name": "SP_Log_Process_Success",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "LK_Get_Source_MaxWatermark",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[usp_ProcessLog_Update]",
+					"storedProcedureParameters": {
+						"ProcessLogId": {
+							"value": "@activity('LK_Get_ProcessLogId').output.firstRow.ProcessLogId"
+						},
+						"Status": {
+							"value": "Succeeded"
+						},
+						"RowsRead": {
+							"value": "@activity('CP_AzureSQL_To_ADLS').output.rowsRead"
+						},
+						"RowsWritten": {
+							"value": "@activity('CP_AzureSQL_To_ADLS').output.rowsCopied"
+						},
+						"ErrorMessage": {
+							"value": "' '"
+						},
+						"ProcessId": {
+							"value": "@pipeline().parameters.pProcessId"
+						},
+						"UpdateWatermark": {
+							"value": {
+								"value": "\n@equals(\n    toUpper(pipeline().parameters.pLoadType),\n    'INCREMENTAL'\n)\n",
+								"type": "Expression"
+							}
+						},
+						"LastCommittedWatermark": {
+							"value": "@activity('LK_Get_Source_MaxWatermark').output.firstRow.MaxWatermark"
+						},
+						"LastSuccessfulBatchId": {
+							"value": "@pipeline().parameters.pBatchId"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_AzureSQL",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "SP_Log_Process_Failure",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "CP_AzureSQL_To_ADLS",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[usp_ProcessLog_Update]",
+					"storedProcedureParameters": {
+						"ProcessLogId": {
+							"value": "@activity('LK_Get_ProcessLogId').output.firstRow.ProcessLogId"
+						},
+						"Status": {
+							"value": "Failed"
+						},
+						"ProcessId": {
+							"value": "@pipeline().parameters.pProcessId"
+						},
+						"BatchId": {
+							"value": "@pipeline().parameters.pBatchId"
+						},
+						"PipelineRunId": {
+							"value": "@pipeline().RunId"
+						},
+						"ErrorMessage": {
+							"value": "@activity('CP_AzureSQL_To_ADLS').error.message"
+						},
+						"ExceptionType": {
+							"value": "PipelineFailure"
+						},
+						"SourceObject": {
+							"value": "@concat(pipeline().parameters.pSourceSchema,'.',pipeline().parameters.pSourceObject)"
+						},
+						"RowsRead": {
+							"value": "0"
+						},
+						"RowsWritten": {
+							"value": "0"
+						},
+						"FileUri": {
+							"value": {
+								"value": "@concat('raw/OnPremSQL/', pipeline().parameters.pSourceSchema, '/', pipeline().parameters.pSourceObject, '/', pipeline().parameters.pSourceObject, '.parquet')",
+								"type": "Expression"
+							}
+						},
+						"ErrorCode": {
+							"value": {
+								"value": "@activity('CP_AzureSQL_To_ADLS').error.errorCode",
+								"type": "Expression"
+							}
+						},
+						"RuleName": {
+							"value": "ADF_Copy_Failure"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_AzureSQL",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "LK_Get_Source_MaxWatermark",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "CP_AzureSQL_To_ADLS",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "SqlServerSource",
+						"sqlReaderQuery": "@concat(\n    'SELECT MAX([',\n    pipeline().parameters.pWatermarkColumn,\n    ']) AS MaxWatermark FROM [',\n    pipeline().parameters.pSourceSchema,\n    '].[',\n    pipeline().parameters.pSourceObject,\n    ']'\n)\n",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DS_SQL_Parameterized",
+						"type": "DatasetReference",
+						"parameters": {
+							"pSchema": {
+								"value": "@pipeline().parameters.pSourceSchema",
+								"type": "Expression"
+							},
+							"pTable": {
+								"value": "@pipeline().parameters.pSourceObject",
+								"type": "Expression"
+							},
+							"pQuery": "@concat('SELECT MAX([', pipeline().parameters.pWatermarkColumn, ']) AS MaxWatermark FROM [', pipeline().parameters.pSourceSchema, '].[', pipeline().parameters.pSourceObject, ']')"
+						}
+					}
+				}
 			}
 		],
 		"parameters": {

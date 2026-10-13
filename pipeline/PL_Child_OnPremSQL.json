@@ -165,9 +165,9 @@
 				"type": "SqlServerStoredProcedure",
 				"dependsOn": [
 					{
-						"activity": "CP_OnPremSQL_To_ADLS",
+						"activity": "LK_Get_Source_MaxWatermark",
 						"dependencyConditions": [
-							"Succeeded"
+							"Completed"
 						]
 					}
 				],
@@ -186,19 +186,43 @@
 							"value": {
 								"value": "@activity('LK_Get_ProcessLogId').output.firstRow.ProcessLogId",
 								"type": "Expression"
-							}
+							},
+							"type": "Int64"
 						},
 						"Status": {
-							"value": "Succeeded"
+							"value": "Succeeded",
+							"type": "String"
 						},
 						"RowsRead": {
-							"value": "@activity('CP_OnPremSQL_To_ADLS').output.rowsRead"
+							"value": "@activity('CP_OnPremSQL_To_ADLS').output.rowsRead",
+							"type": "Int64"
 						},
 						"RowsWritten": {
-							"value": "@activity('CP_OnPremSQL_To_ADLS').output.rowsCopied"
+							"value": "@activity('CP_OnPremSQL_To_ADLS').output.rowsCopied",
+							"type": "Int64"
 						},
 						"ErrorMessage": {
-							"value": "' '"
+							"value": "' '",
+							"type": "String"
+						},
+						"ProcessId": {
+							"value": "@pipeline().parameters.pProcessId",
+							"type": "Int32"
+						},
+						"UpdateWatermark": {
+							"value": {
+								"value": "\n@equals(\n    toUpper(pipeline().parameters.pLoadType),\n    'INCREMENTAL'\n)\n",
+								"type": "Expression"
+							},
+							"type": "Boolean"
+						},
+						"LastCommittedWatermark": {
+							"value": "@activity('LK_Get_Source_MaxWatermark').output.firstRow.MaxWatermark",
+							"type": "Datetime"
+						},
+						"LastSuccessfulBatchId": {
+							"value": "@pipeline().parameters.pBatchId",
+							"type": "String"
 						}
 					}
 				},

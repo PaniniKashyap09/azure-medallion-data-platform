@@ -1,6 +1,200 @@
 {
 	"name": "PL_Master_Ingestion",
 	"properties": {
+		"activities": [
+			{
+				"name": "LK_Get_Active_Metadata",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "-- Active processes ki metadata aur unka last committed watermark retrieve karein\nSELECT\n    m.ProcessId,\n    m.ProcessName,\n    m.SourceType,\n    m.SourceSchema,\n    m.SourceObject,\n    m.LoadType,\n    m.WatermarkColumn,\n    w.LastCommittedWatermark AS LastWatermarkValue,\n    w.LastSuccessfulBatchId,\n    m.ExecutionOrder,\n    m.IsActive\nFROM dbo.MetadataConfig AS m\nLEFT JOIN dbo.WatermarkState AS w\n    ON m.ProcessId = w.ProcessId\nWHERE m.IsActive = 1\nORDER BY m.ExecutionOrder;",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "DS_AzureSQL_Parameterized",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "FE_Process_Metadata",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "LK_Get_Active_Metadata",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('LK_Get_Active_Metadata').output.value",
+						"type": "Expression"
+					},
+					"batchCount": 2,
+					"activities": [
+						{
+							"name": "SW_SourceType",
+							"type": "Switch",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"on": {
+									"value": "@toUpper(item().SourceType)",
+									"type": "Expression"
+								},
+								"cases": [
+									{
+										"value": "ONPREMSQL",
+										"activities": [
+											{
+												"name": "EP_Child_OnPremSQL",
+												"type": "ExecutePipeline",
+												"dependsOn": [],
+												"policy": {
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"pipeline": {
+														"referenceName": "PL_Child_OnPremSQL",
+														"type": "PipelineReference"
+													},
+													"waitOnCompletion": true,
+													"parameters": {
+														"pProcessId": {
+															"value": "@item().ProcessId",
+															"type": "Expression"
+														},
+														"pSourceSchema": "@item().SourceSchema",
+														"pSourceObject": "@item().SourceObject",
+														"pLoadType": "@item().LoadType",
+														"pWatermarkColumn": "@item().WatermarkColumn",
+														"pLastWatermarkValue": "@string(item().LastWatermarkValue)",
+														"pBatchId": "@pipeline().parameters.pBatchId"
+													}
+												}
+											}
+										]
+									},
+									{
+										"value": "AZURESQL",
+										"activities": [
+											{
+												"name": "EP_Child_AzureSQL",
+												"type": "ExecutePipeline",
+												"dependsOn": [],
+												"policy": {
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"pipeline": {
+														"referenceName": "PL_Child_AzureSQL",
+														"type": "PipelineReference"
+													},
+													"waitOnCompletion": true,
+													"parameters": {
+														"pProcessId": "@item().ProcessId",
+														"pSourceSchema": "@item().SourceSchema",
+														"pSourceObject": "@item().SourceObject",
+														"pLoadType": "@item().LoadType",
+														"pWatermarkColumn": "@item().WatermarkColumn",
+														"pLastWatermarkValue": "@string(item().LastWatermarkValue)",
+														"pBatchId": "@pipeline().parameters.pBatchId"
+													}
+												}
+											}
+										]
+									},
+									{
+										"value": "API",
+										"activities": [
+											{
+												"name": "EP_Child_API",
+												"type": "ExecutePipeline",
+												"dependsOn": [],
+												"policy": {
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"pipeline": {
+														"referenceName": "PL_Child_API",
+														"type": "PipelineReference"
+													},
+													"waitOnCompletion": true,
+													"parameters": {
+														"pProcessId": "@item().ProcessId",
+														"pSourceSchema": "@item().SourceSchema",
+														"pSourceObject": "@item().SourceObject",
+														"pLoadType": "@item().LoadType",
+														"pWatermarkColumn": "@item().WatermarkColumn",
+														"pLastWatermarkValue": "@string(item().LastWatermarkValue)"
+													}
+												}
+											}
+										]
+									}
+								]
+							}
+						},
+						{
+							"name": "NB_Run_Bronze_Ingestion",
+							"type": "DatabricksNotebook",
+							"dependsOn": [
+								{
+									"activity": "SW_SourceType",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"notebookPath": "/Users/paninikashyap917@gmail.com/NB_Bronze_Ingestion",
+								"baseParameters": {
+									"source_file": {
+										"value": "@concat('abfss://landing@steadventureworks011.dfs.core.windows.net/raw/', if(equals(toUpper(item().SourceType),'ONPREMSQL'),'OnPremSQL',if(equals(toUpper(item().SourceType),'AZURESQL'),'AzureSQL','API')), '/', if(equals(toUpper(item().SourceType),'API'),'latest',item().SourceSchema), '/', item().SourceObject, '/', item().SourceObject, if(equals(toUpper(item().SourceType),'API'),'.json','.parquet'))",
+										"type": "Expression"
+									},
+									"bronze_path": {
+										"value": "@concat('abfss://data@steadventureworks011.dfs.core.windows.net/bronze/', if(equals(toUpper(item().SourceType),'ONPREMSQL'),'onprem',if(equals(toUpper(item().SourceType),'AZURESQL'),'azuresql','api')), '/', if(equals(toUpper(item().SourceType),'API'),'latest',item().SourceSchema), '/', item().SourceObject, '/')",
+										"type": "Expression"
+									},
+									"source_system": "@item().SourceType",
+									"batch_id": "@pipeline().parameters.pBatchId"
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "LS_Databricks",
+								"type": "LinkedServiceReference"
+							}
+						}
+					]
+				}
+			}
+		],
 		"annotations": []
 	}
 }
