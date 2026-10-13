@@ -90,6 +90,10 @@
 												"typeProperties": {
 													"source": {
 														"type": "SqlServerSource",
+														"sqlReaderQuery": {
+															"value": "/* FULL load: saari rows read karo.\n   INCREMENTAL load: sirf watermark se newer rows read karo. */\n@concat(\n    'SELECT * FROM ',\n    '[', item().SourceSchema, '].[',\n    item().SourceObject, ']',\n    if(\n        equals(toUpper(item().LoadType), 'INCREMENTAL'),\n        concat(\n            ' WHERE [', item().WatermarkColumn, '] > ''',\n            string(item().LastWatermarkValue),\n            ''''\n        ),\n        ''\n    )\n)",
+															"type": "Expression"
+														},
 														"queryTimeout": "02:00:00",
 														"partitionOption": "None"
 													},
@@ -769,7 +773,10 @@
 							"value": ""
 						},
 						"LastSuccessfulBatchId": {
-							"value": "@pipeline().RunId"
+							"value": {
+								"value": "@pipeline().RunId",
+								"type": "Expression"
+							}
 						}
 					}
 				},
