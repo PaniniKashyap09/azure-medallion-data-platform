@@ -564,11 +564,14 @@
 							"type": "Int64"
 						},
 						"ErrorMessage": {
-							"value": "",
+							"value": null,
 							"type": "String"
 						},
 						"ProcessLogId": {
-							"value": "",
+							"value": {
+								"value": "@activity('LK_Get_ProcessLogId').output.firstRow.ProcessLogId",
+								"type": "Expression"
+							},
 							"type": "Int32"
 						}
 					}
@@ -600,9 +603,9 @@
 				"typeProperties": {
 					"storedProcedureName": "[dbo].[usp_ProcessLog_Update]",
 					"storedProcedureParameters": {
-						"PipelineRunId": {
+						"ProcessLogId": {
 							"value": {
-								"value": "@pipeline().RunId",
+								"value": "@activity('LK_Get_ProcessLogId').output.firstRow.ProcessLogId",
 								"type": "Expression"
 							},
 							"type": "String"
@@ -620,7 +623,10 @@
 							"type": "Int64"
 						},
 						"ErrorMessage": {
-							"value": "",
+							"value": {
+								"value": "@string('Pipeline failed. Check failed activity output.')",
+								"type": "Expression"
+							},
 							"type": "String"
 						}
 					}
