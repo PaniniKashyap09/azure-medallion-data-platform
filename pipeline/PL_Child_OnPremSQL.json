@@ -25,7 +25,7 @@
 					"source": {
 						"type": "SqlServerSource",
 						"sqlReaderQuery": {
-							"value": "\n@concat(\n    'SELECT * FROM [',\n    pipeline().parameters.pSourceSchema,\n    '].[',\n    pipeline().parameters.pSourceObject,\n    ']',\n    if(\n        and(\n            equals(toUpper(pipeline().parameters.pLoadType), 'INCREMENTAL'),\n            not(empty(pipeline().parameters.pLastWatermarkValue))\n        ),\n        concat(\n            ' WHERE [',\n            pipeline().parameters.pWatermarkColumn,\n            '] > ''',\n            pipeline().parameters.pLastWatermarkValue,\n            ''''\n        ),\n        ''\n    )\n)\n",
+							"value": "@concat(\n    'SELECT * FROM [',\n    pipeline().parameters.pSourceSchema,\n    '].[',\n    pipeline().parameters.pSourceObject,\n    ']',\n    if(\n        and(\n            equals(toUpper(pipeline().parameters.pLoadType), 'INCREMENTAL'),\n            not(empty(pipeline().parameters.pLastWatermarkValue))\n        ),\n        concat(\n            ' WHERE [',\n            pipeline().parameters.pWatermarkColumn,\n            '] > ''',\n            pipeline().parameters.pLastWatermarkValue,\n            ''''\n        ),\n        ''\n    )\n)\n",
 							"type": "Expression"
 						},
 						"queryTimeout": "02:00:00",
