@@ -226,6 +226,136 @@
 													"referenceName": "LS_AzureSQL",
 													"type": "LinkedServiceReference"
 												}
+											},
+											{
+												"name": "CP_Landing_To_Archive",
+												"type": "Copy",
+												"dependsOn": [
+													{
+														"activity": "NB_Bronze_OnPremSQL",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "ParquetSource",
+														"storeSettings": {
+															"type": "AzureBlobFSReadSettings",
+															"recursive": true,
+															"enablePartitionDiscovery": false
+														},
+														"formatSettings": {
+															"type": "ParquetReadSettings"
+														}
+													},
+													"sink": {
+														"type": "ParquetSink",
+														"storeSettings": {
+															"type": "AzureBlobFSWriteSettings"
+														},
+														"formatSettings": {
+															"type": "ParquetWriteSettings"
+														}
+													},
+													"enableStaging": false,
+													"translator": {
+														"type": "TabularTranslator",
+														"typeConversion": true,
+														"typeConversionSettings": {
+															"allowDataTruncation": true,
+															"treatBooleanAsNumber": false
+														}
+													}
+												},
+												"inputs": [
+													{
+														"referenceName": "DS_ADLS_Parquet_Parameterized",
+														"type": "DatasetReference",
+														"parameters": {
+															"pFolderPath": {
+																"value": "@item().TargetFolder",
+																"type": "Expression"
+															},
+															"pFileName": {
+																"value": "@concat(item().SourceObject,'.parquet')",
+																"type": "Expression"
+															}
+														}
+													}
+												],
+												"outputs": [
+													{
+														"referenceName": "DS_ADLS_Parquet_Parameterized",
+														"type": "DatasetReference",
+														"parameters": {
+															"pFolderPath": {
+																"value": "@concat('archive/', item().TargetFolder)",
+																"type": "Expression"
+															},
+															"pFileName": {
+																"value": "@concat(item().SourceObject,'.parquet')",
+																"type": "Expression"
+															}
+														}
+													}
+												]
+											},
+											{
+												"name": "GM_Verify_Archived_File",
+												"type": "GetMetadata",
+												"dependsOn": [
+													{
+														"activity": "CP_Landing_To_Archive",
+														"dependencyConditions": [
+															"Succeeded"
+														]
+													}
+												],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"dataset": {
+														"referenceName": "DS_ADLS_Parquet_Parameterized",
+														"type": "DatasetReference",
+														"parameters": {
+															"pFolderPath": {
+																"value": "@concat('archive/', item().TargetFolder)",
+																"type": "Expression"
+															},
+															"pFileName": {
+																"value": "@concat(item().SourceObject,'.parquet')",
+																"type": "Expression"
+															}
+														}
+													},
+													"fieldList": [
+														"size",
+														"exists"
+													],
+													"storeSettings": {
+														"type": "AzureBlobFSReadSettings",
+														"enablePartitionDiscovery": false
+													},
+													"formatSettings": {
+														"type": "ParquetReadSettings"
+													}
+												}
 											}
 										]
 									},
