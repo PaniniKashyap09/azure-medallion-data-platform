@@ -199,6 +199,12 @@
 				}
 			}
 		],
+		"parameters": {
+			"pBatchId": {
+				"type": "string",
+				"defaultValue": "Master_Test_20261014_01"
+			}
+		},
 		"annotations": []
 	}
 }
