@@ -243,6 +243,30 @@
 						},
 						"ErrorMessage": {
 							"value": "@activity('CP_OnPremSQL_To_ADLS').error.message"
+						},
+						"ProcessId": {
+							"value": "@pipeline().parameters.pProcessId"
+						},
+						"BatchId": {
+							"value": "@pipeline().parameters.pBatchId"
+						},
+						"PipelineRunId": {
+							"value": "@pipeline().RunId"
+						},
+						"ExceptionType": {
+							"value": "PipelineFailure"
+						},
+						"SourceObject": {
+							"value": "@concat(pipeline().parameters.pSourceSchema, '.', pipeline().parameters.pSourceObject)"
+						},
+						"FileUri": {
+							"value": "@concat('raw/OnPremSQL/', pipeline().parameters.pSourceSchema, '/', pipeline().parameters.pSourceObject, '/', pipeline().parameters.pSourceObject, '.parquet')"
+						},
+						"ErrorCode": {
+							"value": "@activity('CP_OnPremSQL_To_ADLS').error.errorCode"
+						},
+						"RuleName": {
+							"value": "ADF_Copy_Failure"
 						}
 					}
 				},
