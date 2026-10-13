@@ -191,15 +191,15 @@
 												"typeProperties": {
 													"storedProcedureName": "[dbo].[usp_ProcessLog_Update]",
 													"storedProcedureParameters": {
-														"PipelineRunId": {
+														"ProcessLogId": {
 															"value": {
-																"value": "@pipeline().RunId",
+																"value": "@activity('LK_Get_ProcessLogId').output.firstRow.ProcessLogId",
 																"type": "Expression"
 															},
 															"type": "String"
 														},
 														"Status": {
-															"value": null,
+															"value": "started",
 															"type": "String"
 														},
 														"RowsRead": {
