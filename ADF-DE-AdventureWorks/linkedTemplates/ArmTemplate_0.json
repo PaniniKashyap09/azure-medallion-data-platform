@@ -440,9 +440,9 @@
 						"type": "Lookup",
 						"dependsOn": [
 							{
-								"activity": "SP_Log_Process_Start",
+								"activity": "LK_Get_ProcessLogId",
 								"dependencyConditions": [
-									"Completed"
+									"Succeeded"
 								]
 							}
 						],
@@ -624,15 +624,15 @@
 														"typeProperties": {
 															"storedProcedureName": "[[dbo].[usp_ProcessLog_Update]",
 															"storedProcedureParameters": {
-																"PipelineRunId": {
+																"ProcessLogId": {
 																	"value": {
-																		"value": "@pipeline().RunId",
+																		"value": "@activity('LK_Get_ProcessLogId').output.firstRow.ProcessLogId",
 																		"type": "Expression"
 																	},
 																	"type": "String"
 																},
 																"Status": {
-																	"value": null,
+																	"value": "Started",
 																	"type": "String"
 																},
 																"RowsRead": {
@@ -658,6 +658,137 @@
 														"linkedServiceName": {
 															"referenceName": "LS_AzureSQL",
 															"type": "LinkedServiceReference"
+														}
+													},
+													{
+														"name": "CP_Landing_To_Archive",
+														"type": "Copy",
+														"dependsOn": [
+															{
+																"activity": "NB_Bronze_OnPremSQL",
+																"dependencyConditions": [
+																	"Succeeded"
+																]
+															}
+														],
+														"policy": {
+															"timeout": "0.12:00:00",
+															"retry": 0,
+															"retryIntervalInSeconds": 30,
+															"secureOutput": false,
+															"secureInput": false
+														},
+														"userProperties": [],
+														"typeProperties": {
+															"source": {
+																"type": "ParquetSource",
+																"storeSettings": {
+																	"type": "AzureBlobFSReadSettings",
+																	"recursive": true,
+																	"enablePartitionDiscovery": false
+																},
+																"formatSettings": {
+																	"type": "ParquetReadSettings"
+																}
+															},
+															"sink": {
+																"type": "ParquetSink",
+																"storeSettings": {
+																	"type": "AzureBlobFSWriteSettings"
+																},
+																"formatSettings": {
+																	"type": "ParquetWriteSettings"
+																}
+															},
+															"enableStaging": false,
+															"translator": {
+																"type": "TabularTranslator",
+																"typeConversion": true,
+																"typeConversionSettings": {
+																	"allowDataTruncation": true,
+																	"treatBooleanAsNumber": false
+																}
+															}
+														},
+														"inputs": [
+															{
+																"referenceName": "DS_ADLS_Parquet_Parameterized",
+																"type": "DatasetReference",
+																"parameters": {
+																	"pFolderPath": {
+																		"value": "@item().TargetFolder",
+																		"type": "Expression"
+																	},
+																	"pFileName": {
+																		"value": "@concat(item().SourceObject,'.parquet')",
+																		"type": "Expression"
+																	}
+																}
+															}
+														],
+														"outputs": [
+															{
+																"referenceName": "DS_ADLS_Parquet_Parameterized",
+																"type": "DatasetReference",
+																"parameters": {
+																	"pFolderPath": {
+																		"value": "@concat('archive/', item().TargetFolder)",
+																		"type": "Expression"
+																	},
+																	"pFileName": {
+																		"value": "@concat(item().SourceObject,'.parquet')",
+																		"type": "Expression"
+																	}
+																}
+															}
+														]
+													},
+													{
+														"name": "GM_Verify_Archived_File",
+														"type": "GetMetadata",
+														"dependsOn": [
+															{
+																"activity": "CP_Landing_To_Archive",
+																"dependencyConditions": [
+																	"Succeeded"
+																]
+															}
+														],
+														"policy": {
+															"timeout": "0.12:00:00",
+															"retry": 0,
+															"retryIntervalInSeconds": 30,
+															"secureOutput": false,
+															"secureInput": false
+														},
+														"userProperties": [],
+														"typeProperties": {
+															"dataset": {
+																"referenceName": "DS_ADLS_Parquet_Parameterized",
+																"type": "DatasetReference",
+																"parameters": {
+																	"pFolderPath": {
+																		"value": "@concat('archive/', item().TargetFolder)",
+																		"type": "Expression"
+																	},
+																	"pFileName": {
+																		"value": "@concat(item().SourceObject,'.parquet')",
+																		"type": "Expression"
+																	}
+																}
+															},
+															"fieldList": [
+																"size",
+																"exists"
+															],
+															"storeSettings": {
+																"type": "AzureBlobFSReadSettings",
+																"recursive": true,
+																"enablePartitionDiscovery": false
+															},
+															"formatSettings": {
+																"type": "ParquetReadSettings"
+															}
 														}
 													}
 												]
@@ -854,13 +985,6 @@
 						"typeProperties": {
 							"storedProcedureName": "[[dbo].[usp_ProcessLog_Update]",
 							"storedProcedureParameters": {
-								"PipelineRunId": {
-									"value": {
-										"value": "@pipeline().RunId",
-										"type": "Expression"
-									},
-									"type": "String"
-								},
 								"Status": {
 									"value": "Succeeded",
 									"type": "String"
@@ -874,8 +998,15 @@
 									"type": "Int64"
 								},
 								"ErrorMessage": {
-									"value": "",
+									"value": null,
 									"type": "String"
+								},
+								"ProcessLogId": {
+									"value": {
+										"value": "@activity('LK_Get_ProcessLogId').output.firstRow.ProcessLogId",
+										"type": "Expression"
+									},
+									"type": "Int32"
 								}
 							}
 						},
@@ -906,9 +1037,9 @@
 						"typeProperties": {
 							"storedProcedureName": "[[dbo].[usp_ProcessLog_Update]",
 							"storedProcedureParameters": {
-								"PipelineRunId": {
+								"ProcessLogId": {
 									"value": {
-										"value": "@pipeline().RunId",
+										"value": "@activity('LK_Get_ProcessLogId').output.firstRow.ProcessLogId",
 										"type": "Expression"
 									},
 									"type": "String"
@@ -926,8 +1057,118 @@
 									"type": "Int64"
 								},
 								"ErrorMessage": {
-									"value": "",
+									"value": {
+										"value": "@string('Pipeline failed. Check failed activity output.')",
+										"type": "Expression"
+									},
 									"type": "String"
+								}
+							}
+						},
+						"linkedServiceName": {
+							"referenceName": "LS_AzureSQL",
+							"type": "LinkedServiceReference"
+						}
+					},
+					{
+						"name": "LK_Get_ProcessLogId",
+						"type": "Lookup",
+						"dependsOn": [
+							{
+								"activity": "SP_Log_Process_Start",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": {
+									"value": "SELECT TOP (1)\n    ProcessLogId\nFROM dbo.ProcessLog\nWHERE PipelineRunId = '@{pipeline().RunId}'\nORDER BY ProcessLogId DESC;",
+									"type": "Expression"
+								},
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "DS_AzureSQL_Parameterized",
+								"type": "DatasetReference",
+								"parameters": {
+									"pSchema": "dbo",
+									"pTable": "ProcessLog"
+								}
+							}
+						}
+					},
+					{
+						"name": "SP_Log_Exception",
+						"type": "SqlServerStoredProcedure",
+						"dependsOn": [
+							{
+								"activity": "FE_Process_Metadata",
+								"dependencyConditions": [
+									"Failed"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"storedProcedureName": "[[dbo].[usp_ExceptionLog_Insert]",
+							"storedProcedureParameters": {
+								"ProcessId": {
+									"value": {
+										"value": "@pipeline().parameters.pProcessId",
+										"type": "Expression"
+									}
+								},
+								"BatchId": {
+									"value": {
+										"value": "@pipeline().RunId",
+										"type": "Expression"
+									}
+								},
+								"PipelineRunId": {
+									"value": {
+										"value": "@pipeline().RunId",
+										"type": "Expression"
+									}
+								},
+								"ExceptionType": {
+									"value": "PipelineFailure"
+								},
+								"SourceObject": {
+									"value": {
+										"value": "@string(pipeline().parameters.pProcessId)",
+										"type": "Expression"
+									}
+								},
+								"FileUri": {
+									"value": ""
+								},
+								"ErrorCode": {
+									"value": "Pipeline failed. Check failed activity output."
+								},
+								"ErrorMessage": {
+									"value": ""
+								},
+								"RuleName": {
+									"value": "ADF_PipelineFailure"
 								}
 							}
 						},
