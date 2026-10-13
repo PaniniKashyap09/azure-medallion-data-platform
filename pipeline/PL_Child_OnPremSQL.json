@@ -155,7 +155,7 @@
 							"pTable": "ProcessLog"
 						}
 					},
-					"firstRowOnly": false
+					"firstRowOnly": true
 				}
 			},
 			{
