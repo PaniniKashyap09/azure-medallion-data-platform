@@ -5,7 +5,14 @@
 			{
 				"name": "CP_OnPremSQL_To_ADLS",
 				"type": "Copy",
-				"dependsOn": [],
+				"dependsOn": [
+					{
+						"activity": "LK_Get_ProcessLogId",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -80,14 +87,7 @@
 			{
 				"name": "SP_Log_Process_Start",
 				"type": "SqlServerStoredProcedure",
-				"dependsOn": [
-					{
-						"activity": "CP_OnPremSQL_To_ADLS",
-						"dependencyConditions": [
-							"Succeeded"
-						]
-					}
-				],
+				"dependsOn": [],
 				"policy": {
 					"timeout": "0.12:00:00",
 					"retry": 0,
@@ -158,6 +158,153 @@
 							"pTable": "ProcessLog"
 						}
 					}
+				}
+			},
+			{
+				"name": "SP_Log_Process_Success",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "CP_OnPremSQL_To_ADLS",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[usp_ProcessLog_Update]",
+					"storedProcedureParameters": {
+						"ProcessLogId": {
+							"value": {
+								"value": "@activity('LK_Get_ProcessLogId').output.firstRow.ProcessLogId",
+								"type": "Expression"
+							}
+						},
+						"Status": {
+							"value": "Succeeded"
+						},
+						"RowsRead": {
+							"value": "@activity('CP_OnPremSQL_To_ADLS').output.rowsRead"
+						},
+						"RowsWritten": {
+							"value": "@activity('CP_OnPremSQL_To_ADLS').output.rowsCopied"
+						},
+						"ErrorMessage": {
+							"value": "' '"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_AzureSQL",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "SP_Log_Process_Failure",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "CP_OnPremSQL_To_ADLS",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[usp_ProcessLog_Update]",
+					"storedProcedureParameters": {
+						"ProcessLogId": {
+							"value": "@activity('LK_Get_ProcessLogId').output.firstRow.ProcessLogId"
+						},
+						"Status": {
+							"value": "Failed"
+						},
+						"RowsRead": {
+							"value": "0"
+						},
+						"RowsWritten": {
+							"value": "0"
+						},
+						"ErrorMessage": {
+							"value": "@activity('CP_OnPremSQL_To_ADLS').error.message"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_AzureSQL",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "SP_Log_Exception",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "CP_OnPremSQL_To_ADLS",
+						"dependencyConditions": [
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[usp_ExceptionLog_Insert]",
+					"storedProcedureParameters": {
+						"ProcessId": {
+							"value": "@pipeline().parameters.pProcessId"
+						},
+						"BatchId": {
+							"value": "@pipeline().parameters.pBatchId"
+						},
+						"PipelineRunId": {
+							"value": "@pipeline().RunId"
+						},
+						"ExceptionType": {
+							"value": "PipelineFailure"
+						},
+						"SourceObject": {
+							"value": "@concat(pipeline().parameters.pSourceSchema, '.', pipeline().parameters.pSourceObject)"
+						},
+						"FileUri": {
+							"value": "@concat('raw/OnPremSQL/', pipeline().parameters.pSourceSchema, '/', pipeline().parameters.pSourceObject, '/', pipeline().parameters.pSourceObject, '.parquet')"
+						},
+						"ErrorCode": {
+							"value": "@activity('CP_OnPremSQL_To_ADLS').error.errorCode"
+						},
+						"ErrorMessage": {
+							"value": "@activity('CP_OnPremSQL_To_ADLS').error.message"
+						},
+						"RuleName": {
+							"value": "ADF_Copy_Failure"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "LS_AzureSQL",
+					"type": "LinkedServiceReference"
 				}
 			}
 		],
