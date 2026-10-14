@@ -56,8 +56,14 @@
 						"referenceName": "DS_ADLS_JSON_Parameterized",
 						"type": "DatasetReference",
 						"parameters": {
-							"pFolderPath": "@concat('raw/API/', pipeline().parameters.pSourceObject)",
-							"pFileName": "@concat(pipeline().parameters.pSourceObject, '.json')"
+							"pFolderPath": {
+								"value": "raw/API/Frankfurter",
+								"type": "Expression"
+							},
+							"pFileName": {
+								"value": "latest.json",
+								"type": "Expression"
+							}
 						}
 					}
 				]
