@@ -315,8 +315,8 @@
 												]
 											},
 											{
-												"name": "GM_Verify_Archived_File",
-												"type": "GetMetadata",
+												"name": "SP_Update_Watermark",
+												"type": "SqlServerStoredProcedure",
 												"dependsOn": [
 													{
 														"activity": "CP_Landing_To_Archive",
@@ -334,31 +334,65 @@
 												},
 												"userProperties": [],
 												"typeProperties": {
-													"dataset": {
-														"referenceName": "DS_ADLS_Parquet_Parameterized",
-														"type": "DatasetReference",
-														"parameters": {
-															"pFolderPath": {
-																"value": "@concat('archive/', item().TargetFolder)",
+													"storedProcedureName": "[dbo].[usp_Watermark_Update]",
+													"storedProcedureParameters": {
+														"ProcessId": {
+															"value": {
+																"value": "@pipeline().parameters.pProcessId",
 																"type": "Expression"
-															},
-															"pFileName": {
-																"value": "@concat(item().SourceObject,'.parquet')",
+															}
+														},
+														"LastCommittedWatermark": {
+															"value": ""
+														},
+														"LastSuccessfulBatchId": {
+															"value": {
+																"value": "@pipeline().RunId",
 																"type": "Expression"
 															}
 														}
+													}
+												},
+												"linkedServiceName": {
+													"referenceName": "LS_AzureSQL",
+													"type": "LinkedServiceReference"
+												}
+											},
+											{
+												"name": "LK_Get_Max_Watermark",
+												"type": "Lookup",
+												"dependsOn": [],
+												"policy": {
+													"timeout": "0.12:00:00",
+													"retry": 0,
+													"retryIntervalInSeconds": 30,
+													"secureOutput": false,
+													"secureInput": false
+												},
+												"userProperties": [],
+												"typeProperties": {
+													"source": {
+														"type": "SqlServerSource",
+														"sqlReaderQuery": {
+															"value": "\n@concat(\n    'SELECT MAX([', item().WatermarkColumn,\n    ']) AS MaxWatermark FROM [',\n    item().SourceSchema, '].[',\n    item().SourceObject, ']'\n)\n",
+															"type": "Expression"
+														},
+														"queryTimeout": "02:00:00",
+														"partitionOption": "None"
 													},
-													"fieldList": [
-														"size",
-														"exists"
-													],
-													"storeSettings": {
-														"type": "AzureBlobFSReadSettings",
-														"recursive": true,
-														"enablePartitionDiscovery": false
-													},
-													"formatSettings": {
-														"type": "ParquetReadSettings"
+													"dataset": {
+														"referenceName": "DS_SQL_Parameterized",
+														"type": "DatasetReference",
+														"parameters": {
+															"pSchema": {
+																"value": "@item().SourceSchema",
+																"type": "Expression"
+															},
+															"pTable": {
+																"value": "@item().SourceObject",
+																"type": "Expression"
+															}
+														}
 													}
 												}
 											}
@@ -740,43 +774,6 @@
 						},
 						"RuleName": {
 							"value": "ADF_PipelineFailure"
-						}
-					}
-				},
-				"linkedServiceName": {
-					"referenceName": "LS_AzureSQL",
-					"type": "LinkedServiceReference"
-				}
-			},
-			{
-				"name": "SP_Update_Watermark",
-				"type": "SqlServerStoredProcedure",
-				"dependsOn": [],
-				"policy": {
-					"timeout": "0.12:00:00",
-					"retry": 0,
-					"retryIntervalInSeconds": 30,
-					"secureOutput": false,
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"storedProcedureName": "[dbo].[usp_Watermark_Update]",
-					"storedProcedureParameters": {
-						"ProcessId": {
-							"value": {
-								"value": "@pipeline().parameters.pProcessId",
-								"type": "Expression"
-							}
-						},
-						"LastCommittedWatermark": {
-							"value": ""
-						},
-						"LastSuccessfulBatchId": {
-							"value": {
-								"value": "@pipeline().RunId",
-								"type": "Expression"
-							}
 						}
 					}
 				},
