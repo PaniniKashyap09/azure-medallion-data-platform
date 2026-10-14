@@ -157,45 +157,6 @@
 									}
 								]
 							}
-						},
-						{
-							"name": "NB_Run_Bronze_Ingestion",
-							"type": "DatabricksNotebook",
-							"dependsOn": [
-								{
-									"activity": "SW_SourceType",
-									"dependencyConditions": [
-										"Succeeded"
-									]
-								}
-							],
-							"policy": {
-								"timeout": "0.12:00:00",
-								"retry": 0,
-								"retryIntervalInSeconds": 30,
-								"secureOutput": false,
-								"secureInput": false
-							},
-							"userProperties": [],
-							"typeProperties": {
-								"notebookPath": "/Users/paninikashyap917@gmail.com/NB_Bronze_Ingestion",
-								"baseParameters": {
-									"source_file": {
-										"value": "@concat(\n'abfss://landing@steadventureworks011.dfs.core.windows.net/raw/',\nif(\nequals(toUpper(item().SourceType), 'ONPREMSQL'),\nconcat(\n'OnPremSQL/',\nitem().SourceSchema,\n'/',\nitem().SourceObject,\n'/',\nitem().SourceObject,\n'.parquet'\n),\nif(\nequals(toUpper(item().SourceType), 'AZURESQL'),\nconcat(\n'AzureSQL/',\nitem().SourceSchema,\n'/',\nitem().SourceObject,\n'/',\nitem().SourceObject,\n'.parquet'\n),\n'API/Frankfurter/latest.json'\n)\n)\n)\n",
-										"type": "Expression"
-									},
-									"bronze_path": {
-										"value": "@concat(\n'abfss://data@steadventureworks011.dfs.core.windows.net/bronze/',\nif(\nequals(toUpper(item().SourceType), 'ONPREMSQL'),\nconcat(\n'onprem/',\ntoLower(item().SourceSchema),\n'/',\ntoLower(item().SourceObject),\n'/'\n),\nif(\nequals(toUpper(item().SourceType), 'AZURESQL'),\nconcat(\n'azuresql/',\ntoLower(item().SourceSchema),\n'/',\ntoLower(item().SourceObject),\n'/'\n),\n'api/frankfurter/'\n)\n)\n)\n",
-										"type": "Expression"
-									},
-									"source_system": "@item().SourceType",
-									"batch_id": "@pipeline().parameters.pBatchId"
-								}
-							},
-							"linkedServiceName": {
-								"referenceName": "LS_Databricks",
-								"type": "LinkedServiceReference"
-							}
 						}
 					]
 				}
