@@ -209,7 +209,7 @@
 						},
 						"UpdateWatermark": {
 							"value": {
-								"value": "@equals(toUpper(pipeline().parameters.pLoadType), 'INCREMENTAL')",
+								"value": "@false",
 								"type": "Expression"
 							},
 							"type": "Boolean"
