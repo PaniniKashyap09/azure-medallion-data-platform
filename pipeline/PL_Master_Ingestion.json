@@ -148,7 +148,8 @@
 														"pSourceObject": "@item().SourceObject",
 														"pLoadType": "@item().LoadType",
 														"pWatermarkColumn": "@item().WatermarkColumn",
-														"pLastWatermarkValue": "@string(item().LastWatermarkValue)"
+														"pLastWatermarkValue": "@string(item().LastWatermarkValue)",
+														"pBatchId": "@pipeline().parameters.pBatchId"
 													}
 												}
 											}
