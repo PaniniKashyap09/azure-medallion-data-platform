@@ -72,11 +72,11 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"pFolderPath": {
-								"value": "\n@concat(\n    'raw/OnPremSQL/',\n    pipeline().parameters.pSourceSchema,\n    '/',\n    pipeline().parameters.pSourceObject\n)\n",
+								"value": "@concat(\n    'raw/OnPremSQL/',\n    pipeline().parameters.pSourceSchema,\n    '/',\n    pipeline().parameters.pSourceObject\n)\n",
 								"type": "Expression"
 							},
 							"pFileName": {
-								"value": "\n@concat(\n    pipeline().parameters.pSourceObject,\n    '.parquet'\n)\n",
+								"value": "@concat(pipeline().parameters.pSourceObject, '.parquet')\n",
 								"type": "Expression"
 							}
 						}
